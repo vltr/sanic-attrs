@@ -1,9 +1,9 @@
 from collections import defaultdict
-from enum import EnumMeta
 from functools import partial, singledispatch
 
 import attr
 
+from .converters import converter, model_converter
 from .options import metadata_aliases
 from .validators import max_str_len, min_max_str_len, min_str_len
 
@@ -29,38 +29,52 @@ class ModelMeta(type):
                 _implement_validators(f, k, annotations)
         return attr.s(super().__new__(mcls, name, bases, attrs))
 
+    def __call__(cls, *args, **kwargs):
+        if args:
+            assert len(args) == 1
+            if args[0] is None or isinstance(
+                args[0], (bool, int, float, list)
+            ):
+                raise TypeError("Must be an object.")
+            elif isinstance(args[0], dict):
+                # Instantiated with a dict.
+                kwargs.update(args[0])
+            else:
+                # Instantiated with an object instance.
+                kwargs.update(
+                    {
+                        f.name: getattr(args[0], f.name)
+                        for f in attr.fields(cls)
+                    }
+                )
+        return super().__call__(**kwargs)
+
+
+# --------------------------------------------------------------- #
+# Converters
+# --------------------------------------------------------------- #
+
+
+@converter.register(ModelMeta)  # to avoid circular dependency
+def _converter_model_meta(type_):
+    return partial(model_converter, type_)
+
 
 def _implement_converter(field, key, annotations):
+    converter_fn = None
+
     if hasattr(field, "type") and field.type:
-        _converter(field.type, field)
+        converter_fn = converter(field.type)
     elif key in annotations:
-        _converter(annotations.get(key), field)
+        converter_fn = converter(annotations.get(key))
+
+    if converter_fn is not None:
+        field.converter = attr.converters.optional(converter_fn)
 
 
-@singledispatch
-def _converter(type_, field):
-    if attr.has(type_):
-        field.converter = attr.converters.optional(
-            partial(_model_converter, type_)
-        )
-
-
-@_converter.register(EnumMeta)
-def _converter_enum(type_, field):
-    field.converter = attr.converters.optional(type_)
-
-
-def _model_converter(model_cls, value):
-    if isinstance(value, model_cls):
-        return value
-    return model_cls(**value)
-
-
-@_converter.register(ModelMeta)
-def _converter_model_meta(type_, field):
-    field.converter = attr.converters.optional(
-        partial(_model_converter, type_)
-    )
+# --------------------------------------------------------------- #
+# Validators
+# --------------------------------------------------------------- #
 
 
 def _implement_validators(field, key, annotations):

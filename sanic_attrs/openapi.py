@@ -1,3 +1,4 @@
+import inspect
 import re
 from itertools import repeat
 
@@ -183,11 +184,22 @@ def build_spec(app, loop):
                     route_spec.responses[k]["schema"] = schema
                     del route_spec.responses[k]["model"]
 
+            summary = route_spec.summary or inspect.getdoc(_handler)
+            summary, *description = summary.split("\n\n")
+
+            if description is not None:
+                description = " ".join(description).replace("\n", " ")
+            else:
+                description = route_spec.description
+
+            # return annotation:
+            # _handler.__annotations__.get('return')
+
             endpoint = remove_nulls(
                 {
                     "operationId": route_spec.operation or route.name,
-                    "summary": route_spec.summary,
-                    "description": route_spec.description,
+                    "summary": summary,
+                    "description": description,
                     "consumes": consumes_content_types,
                     "produces": produces_content_types,
                     "tags": route_spec.tags or None,

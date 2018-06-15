@@ -41,7 +41,9 @@ _Note_: the `swagger_blueprint` is awesome but sometimes you don't want it open-
 
 Since `sanic-attrs` is, of course, based on `attrs` and the Python target version is 3.5+, most of the typing definitions for your model will be made entirely using Python types, either global ones or from the `typing` library. Also, `enums` are supported as well! :sparkles:
 
-Here's the types supported (so far):
+### Supported types
+
+#### "Primitives"
 
 - `int`
 - `float`
@@ -50,15 +52,35 @@ Here's the types supported (so far):
 - `date`
 - `datetime`
 - `bytes`
-- `typing.Any`
-- `typing.Collection`
-- `typing.Dict`
-- `typing.Iterable`
+
+### Enums
+
+Probably all enums will be transparently supported by `sanic-attrs`.
+
+### `typing` to array / list
+
 - `typing.List`
-- `typing.Mapping`
-- `typing.Optional`
+- `typing.Collection`
 - `typing.Sequence`
+- `typing.MutableSequence`
+- `typing.Iterable`
+
+### `typing` to dictionaries
+
+- `typing.Dict`
+- `typing.MutableMapping`
+- `typing.Mapping`
+
+### `typing` to sets
+
 - `typing.Set`
+- `typing.MutableSet`
+- `typing.FrozenSet`
+
+### Other `typing` members
+
+- `typing.Any`
+- `typing.Optional`
 - `typing.Union`
 
 **A note on `list` and `dict`**: Please, use `typing.List` and `typing.Dict` for this.
@@ -317,7 +339,6 @@ These are the types not available from [`typing`](https://docs.python.org/3/libr
 - `Counter` - not a variable
 - `DefaultDict` - perhaps like dict?
 - `Deque` - like List ?
-- `FrozenSet` - a "view-only list?
 - `Generator` - not a variable
 - `Generic` - no way - or Any?
 - `Hashable` - a hashmap?
@@ -330,9 +351,6 @@ These are the types not available from [`typing`](https://docs.python.org/3/libr
 - `Match` - generic (I think)
 - `MethodDescriptorType` - not a variable
 - `MethodWrapperType` - not a variable
-- `MutableMapping` - base class of Mapping, docs: "Abstract base class for generic types."
-- `MutableSequence` - same as above, but for Sequence
-- `MutableSet` - same as above, but for Set
 - `NamedTuple` - what to do here? NamedTuple is just an object with variables that can be *anything* I guess ...
 - `NamedTupleMeta` - baseclass of NamedTuple
 - `NewType` - not a variable / generic ?
@@ -364,6 +382,8 @@ If there's anything missing or required, please fill in a issue or contribute wi
 
 - [ ] Property deal with `required` fields (in OpenAPI `object` schema)
 - [ ] Use type hinting to document the return of a function (as output schema / model)
+- [ ] Provide JSON schemas?
+- [ ] Be microservice-friendly (merging several endpoints definitions into one Swagger UI)
 - [ ] Proper testing
 - [ ] Increase use cases
 - [ ] Find out if I can get the request model without calling the router
