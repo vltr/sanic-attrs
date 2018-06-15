@@ -31,22 +31,20 @@ class ModelMeta(type):
 
     def __call__(cls, *args, **kwargs):
         if args:
-            assert len(args) == 1
-            if args[0] is None or isinstance(
-                args[0], (bool, int, float, list)
-            ):
-                raise TypeError("Must be an object.")
-            elif isinstance(args[0], dict):
-                # Instantiated with a dict.
-                kwargs.update(args[0])
-            else:
-                # Instantiated with an object instance.
-                kwargs.update(
-                    {
-                        f.name: getattr(args[0], f.name)
-                        for f in attr.fields(cls)
-                    }
-                )
+            for arg in args:
+                if arg is None or isinstance(
+                    arg, (bool, int, float, list)
+                ):
+                    raise TypeError("better error handling")  # TODO
+                elif isinstance(arg, dict):
+                    kwargs.update(arg)
+                else:
+                    kwargs.update(
+                        {
+                            f.name: getattr(arg, f.name)
+                            for f in attr.fields(cls)
+                        }
+                    )
         return super().__call__(**kwargs)
 
 
