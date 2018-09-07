@@ -1,3 +1,5 @@
+**ATTENTION**: This project is archived and was forked to receive more updates. Please, redirect yourself to [sanic-swagger](https://github.com/abatilo/sanic-swagger)!
+
 # Sanic with attrs towards Swagger 2.0 / OpenAPI support
 
 Supercharge your [Sanic](https://github.com/channelcat/sanic>) app with:
